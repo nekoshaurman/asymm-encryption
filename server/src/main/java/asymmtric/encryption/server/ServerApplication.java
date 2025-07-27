@@ -48,10 +48,8 @@ public class ServerApplication {
                     publicKey = keyPair.getPublic();
                     privateKey = keyPair.getPrivate();
 
-                    // Преобразуем публичный ключ в Base64
                     String publicKeyBase64 = java.util.Base64.getEncoder().encodeToString(publicKey.getEncoded());
 
-                    // Отправляем новый публичный ключ в Kafka
                     producer.send(new ProducerRecord<>("public-key-topic", "public-key", publicKeyBase64));
                     //producer.close();
 
@@ -74,7 +72,6 @@ public class ServerApplication {
                 String encryptedDataBase64 = record.value();
                 System.out.println("Received encrypted data: " + encryptedDataBase64);
 
-                // Расшифровка данных
                 byte[] encryptedData = java.util.Base64.getDecoder().decode(encryptedDataBase64);
                 javax.crypto.Cipher cipher = javax.crypto.Cipher.getInstance("RSA");
                 cipher.init(javax.crypto.Cipher.DECRYPT_MODE, privateKey);

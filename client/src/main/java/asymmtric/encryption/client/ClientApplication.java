@@ -48,7 +48,6 @@ public class ClientApplication {
 
         while (true) {
             try {
-                // Получение публичного ключа
                 checkKafka = getPublicKeyFromKafka(consumer);
                 if (checkKafka != null) {
                     System.out.println("New public key");
@@ -56,20 +55,16 @@ public class ClientApplication {
                     publicKey = transformFromStringToPublicKey(publicKeyBase64, keyFactory);
                 }
 
-                // Шифрование и отправка сообщений
                 for (int i = 0; i < 3; i++) {
-                    String word = SecretWord.values()[(int) (Math.random() * SecretWord.values().length)].name(); // Случайное слово из Enum
+                    String word = SecretWord.values()[(int) (Math.random() * SecretWord.values().length)].name();
                     System.out.println("Encrypting and sending: " + word);
 
-                    // Шифрование данных
                     Cipher cipher = Cipher.getInstance("RSA");
                     cipher.init(Cipher.ENCRYPT_MODE, publicKey);
                     byte[] encryptedData = cipher.doFinal(word.getBytes());
 
-                    // Отправка зашифрованных данных
                     producer.send(new ProducerRecord<>("encrypted-data-topic", "encrypted-data", Base64.getEncoder().encodeToString(encryptedData)));
 
-                    // Задержка перед следующим сообщением
                     TimeUnit.SECONDS.sleep((i + 1) * 5);
                 }
             } catch (Exception e) {
@@ -79,7 +74,6 @@ public class ClientApplication {
     }
 
     private static PublicKey transformFromStringToPublicKey(String publicKeyBase64, KeyFactory keyFactory) throws InvalidKeySpecException {
-        // Преобразование публичного ключа из Base64
         byte[] decodedKey = Base64.getDecoder().decode(publicKeyBase64);
         return keyFactory.generatePublic(new java.security.spec.X509EncodedKeySpec(decodedKey));
     }
@@ -89,11 +83,10 @@ public class ClientApplication {
 
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(3000));
         for (ConsumerRecord<String, String> record : records) {
-            latestValue = record.value(); // Просто запоминаем последнее
+            latestValue = record.value();
             System.out.println("Received public key from Kafka: " + latestValue);
         }
 
-        // Если ничего не пришло, latestValue будет null — обработать на стороне вызывающего кода
         return latestValue;
     }
 
